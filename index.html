@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jirodrive - Enterprise-Grade File Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: {
+              light: '#f8fafc',
+              dark: '#0f172a',
+            },
+            foreground: {
+              light: '#1e293b',
+              dark: '#e2e8f0',
+            },
+            primary: {
+              light: '#2563eb',
+              dark: '#3b82f6',
+            },
+            secondary: {
+              light: '#0891b2',
+              dark: '#06b6d4',
+            },
+            accent: {
+              light: '#7c3aed',
+              dark: '#8b5cf6',
+            },
+            muted: {
+              light: '#64748b',
+              dark: '#94a3b8',
+            },
+            border: {
+              light: '#e2e8f0',
+              dark: '#1e293b',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Orbitron', 'sans-serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(10px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+
+    .glass-effect {
+      @apply bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/10 dark:border-black/10;
+    }
+
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-thumb);
+      border-radius: 3px;
+    }
+
+    .dark {
+      --scrollbar-thumb: #4b5563;
+      --scrollbar-track: #1f2937;
+    }
+
+    .light {
+      --scrollbar-thumb: #cbd5e1;
+      --scrollbar-track: #f1f5f9;
+    }
+
+    .hexagon {
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .fixed-header {
+      @apply fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/30 dark:bg-black/30 border-b border-white/10 dark:border-black/10 transition-all duration-300;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark transition-colors duration-300 ease-in-out bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.1)_0%,transparent_20%),radial-gradient(circle_at_90%_80%,rgba(16,185,129,0.1)_0%,transparent_20%)]">
+  <!-- Header -->
+  <header id="header" class="transition-all duration-300">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center space-x-2 text-xl font-bold tracking-tight text-primary-light dark:text-primary-dark hover:text-accent-light dark:hover:text-accent-dark transition-colors duration-300">
+        <div class="hexagon bg-primary-light dark:bg-primary-dark w-8 h-8 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+          </svg>
+        </div>
+        <span class="font-display">Jirodrive</span>
+      </a>
+      <div class="flex items-center space-x-4">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Hero Section -->
+      <div class="text-center space-y-6 mb-16 animate-fade-in">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-primary-light via-secondary-light to-accent-light dark:from-primary-dark dark:via-secondary-dark dark:to-accent-dark bg-clip-text text-transparent font-display">
+          Enterprise-Grade File Management
+        </h1>
+        <p class="text-xl text-muted-light dark:text-muted-dark max-w-3xl mx-auto">
+          Experience unparalleled security, efficiency, and control with our cutting-edge file storage technology.
+        </p>
+      </div>
+
+      <!-- Upload Section -->
+      <div class="max-w-2xl mx-auto mb-16 animate-slide-up">
+        <form id="uploadForm" class="glass-effect rounded-xl p-8 space-y-6">
+          <div class="space-y-2">
+            <label for="userInput" class="block text-sm font-medium text-foreground-light dark:text-foreground-dark">
+              Username
+            </label>
+            <input 
+              type="text" 
+              id="userInput" 
+              name="user" 
+              required
+              class="w-full px-4 py-2 bg-white/5 dark:bg-black/5 border border-border-light dark:border-border-dark rounded-md focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-primary-light dark:focus:border-primary-dark transition-all"
+              placeholder="Enter your username"
+            >
+          </div>
+
+          <div class="space-y-2">
+            <label for="fileInput" class="block text-sm font-medium text-foreground-light dark:text-foreground-dark">
+              File
+            </label>
+            <input 
+              type="file" 
+              id="fileInput" 
+              name="file" 
+              required
+              accept=".jpg,.jpeg,.png,.gif,.mp4,.mpeg,.mp3,.apk,.lua"
+              class="hidden"
+            >
+            <div class="relative">
+              <button type="button" id="fileInputButton" class="w-full px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 transition-colors flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                </svg>
+                <span>Select File</span>
+              </button>
+              <p id="selectedFileName" class="mt-2 text-sm text-muted-light dark:text-muted-dark"></p>
+            </div>
+            <p class="text-xs text-muted-light dark:text-muted-dark mt-2">
+              Supported formats: Images (PNG, JPG, GIF), Audio (MP3), Video (MP4, MPEG), APK, LUA
+            </p>
+          </div>
+
+          <button 
+            type="submit"
+            class="w-full px-6 py-3 bg-accent-light dark:bg-accent-dark text-white rounded-md hover:bg-accent-light/90 dark:hover:bg-accent-dark/90 transition-colors flex items-center justify-center space-x-2 font-display"
+          >
+            <span>Upload File</span>
+          </button>
+        </form>
+        <div id="uploadProgress" class="hidden mt-4">
+          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div id="progressBar" class="bg-primary-light dark:bg-primary-dark h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <p id="progressText" class="text-sm text-center mt-2 text-muted-light dark:text-muted-dark"></p>
+        </div>
+      </div>
+
+      <!-- Files Grid -->
+      <div id="fileList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Files will be inserted here -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Fixed Header Functionality
+    const header = document.getElementById('header');
+
+    // Ensure the header is fixed on page load
+    window.addEventListener('load', () => {
+        header.classList.add('fixed-header');
+    });
+
+    // Add or remove the class dynamically on scroll
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 0) {
+            header.classList.add('fixed-header');
+        } else {
+            header.classList.remove('fixed-header');
+        }
+    });
+
+    // Theme Toggle Functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    // Check for saved theme preference or use device preference
+    const savedTheme = localStorage.getItem('color-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        html.classList.add('dark');
+    } else {
+        html.classList.remove('dark');
+    }
+
+    // Toggle theme
+    themeToggle.addEventListener('click', () => {
+        html.classList.toggle('dark');
+        localStorage.setItem('color-theme', html.classList.contains('dark') ? 'dark' : 'light');
+        updateThemeToggleIcon();
+    });
+
+    // Update theme toggle icon
+    function updateThemeToggleIcon() {
+        const isDark = html.classList.contains('dark');
+        themeToggle.innerHTML = isDark
+            ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>'
+            : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>';
+    }
+
+    // Initialize theme toggle icon
+    updateThemeToggleIcon();
+
+    // File input button
+    const fileInput = document.getElementById('fileInput');
+    const fileInputButton = document.getElementById('fileInputButton');
+    const selectedFileName = document.getElementById('selectedFileName');
+
+    fileInputButton.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        selectedFileName.textContent = fileInput.files[0].name;
+      } else {
+        selectedFileName.textContent = '';
+      }
+    });
+
+    // File upload logic with progress indication
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const userInput = document.getElementById("userInput").value;
+      const fileInput = document.getElementById("fileInput");
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const file = fileInput.files[0];
+
+      if (!userInput || !file) {
+        alert("Both username and file are required.");
+        return;
+      }
+
+      // Show progress bar
+      const uploadProgress = document.getElementById("uploadProgress");
+      const progressBar = document.getElementById("progressBar");
+      const progressText = document.getElementById("progressText");
+      uploadProgress.classList.remove("hidden");
+
+      // Update button to show progress
+      submitButton.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Uploading...</span>
+      `;
+      submitButton.disabled = true;
+
+      const formData = new FormData();
+      formData.append("user", userInput);
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          submitButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Uploaded Successfully!</span>
+          `;
+          setTimeout(() => {
+            submitButton.innerHTML = `
+              <span>Upload File</span>
+            `;
+            submitButton.disabled = false;
+            fileInput.value = '';
+            selectedFileName.textContent = '';
+            uploadProgress.classList.add("hidden");
+            progressBar.style.width = "0%";
+            progressText.textContent = "";
+            loadFileList();
+          }, 2000);
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        console.error(error);
+        submitButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span>Upload Failed</span>
+        `;
+        setTimeout(() => {
+          submitButton.innerHTML = `
+            <span>Upload File</span>
+          `;
+          submitButton.disabled = false;
+          uploadProgress.classList.add("hidden");
+          progressBar.style.width = "0%";
+          progressText.textContent = "";
+        }, 2000);
+      }
+    });
+
+    async function loadFileList() {
+      try {
+        const response = await fetch("/file/list");
+        const files = await response.json();
+        const fileList = document.getElementById("fileList");
+        fileList.innerHTML = "";
+
+        files.forEach((file) => {
+          let mediaContent = '';
+          if (file.name.match(/\.(jpeg|jpg|png|gif)$/)) {
+            mediaContent = `
+              <div class="aspect-w-16 aspect-h-9">
+                <img src="${file.url}" alt="${file.name}" class="object-cover rounded-t-lg">
+              </div>
+            `;
+          } else if (file.name.match(/\.(mp3)$/)) {
+            mediaContent = `
+              <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
+                <audio controls class="w-full">
+                  <source src="${file.url}" type="audio/mpeg">
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            `;
+          } else if (file.name.match(/\.(mp4|mov|avi)$/)) {
+            mediaContent = `
+              <div class="aspect-w-16 aspect-h-9">
+                <video controls class="object-cover rounded-t-lg">
+                  <source src="${file.url}" type="video/mp4">
+                  Your browser does not support the video element.
+                </video>
+              </div>
+            `;
+          } else if (file.name.match(/\.(apk|lua)$/)) {
+            mediaContent = `
+              <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-primary-light dark:text-primary-dark">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+            `;
+          }
+
+          const fileCard = document.createElement("div");
+          fileCard.className = "bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-in";
+          fileCard.innerHTML = `
+            ${mediaContent}
+            <div class="p-4 space-y-3">
+              <div>
+                <h3 class="font-medium truncate font-display" title="${file.name}">${file.name}</h3>
+                <p class="text-sm text-muted-light dark:text-muted-dark">Uploaded by: ${file.user}</p>
+              </div>
+              <a 
+                href="${file.url}" 
+                download="${file.name}"
+                class="block w-full px-4 py-2 bg-primary-light dark:bg-primary-dark hover:bg-primary-light/90 dark:hover:bg-primary-dark/90 text-white text-center rounded-md transition-colors text-sm font-display"
+              >
+                Download File
+              </a>
+            </div>
+          `;
+
+          fileList.appendChild(fileCard);
+        });
+      } catch (error) {
+        console.error(error);
+        alert("Error loading file list.");
+      }
+    }
+
+    // Load file list on page load
+    loadFileList();
+  </script>
+</body>
+</html>
+
