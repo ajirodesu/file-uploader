@@ -125,6 +125,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
           </svg>
         </button>
+        <button id="authButton" class="px-4 py-2 bg-accent-light dark:bg-accent-dark text-white rounded-md hover:bg-accent-light/90 dark:hover:bg-accent-dark/90 transition-colors">
+          Login
+        </button>
       </div>
     </nav>
   </header>
@@ -142,23 +145,43 @@
         </p>
       </div>
 
-      <!-- Upload Section -->
-      <div class="max-w-2xl mx-auto mb-16 animate-slide-up">
-        <form id="uploadForm" class="glass-effect rounded-xl p-8 space-y-6">
-          <div class="space-y-2">
-            <label for="userInput" class="block text-sm font-medium text-foreground-light dark:text-foreground-dark">
-              Username
-            </label>
-            <input 
-              type="text" 
-              id="userInput" 
-              name="user" 
-              required
-              class="w-full px-4 py-2 bg-white/5 dark:bg-black/5 border border-border-light dark:border-border-dark rounded-md focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-primary-light dark:focus:border-primary-dark transition-all"
-              placeholder="Enter your username"
-            >
-          </div>
+      <!-- Auth Forms -->
+      <div id="authForms" class="max-w-md mx-auto mb-16 animate-slide-up hidden">
+        <div id="loginForm" class="glass-effect rounded-xl p-8 space-y-6">
+          <h2 class="text-2xl font-bold text-center">Login</h2>
+          <form id="loginFormElement" class="space-y-4">
+            <div>
+              <label for="loginUsername" class="block text-sm font-medium">Username</label>
+              <input type="text" id="loginUsername" name="username" required class="w-full px-3 py-2 border rounded-md">
+            </div>
+            <div>
+              <label for="loginPassword" class="block text-sm font-medium">Password</label>
+              <input type="password" id="loginPassword" name="password" required class="w-full px-3 py-2 border rounded-md">
+            </div>
+            <button type="submit" class="w-full px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md">Login</button>
+          </form>
+          <p class="text-center">Don't have an account? <a href="#" id="showRegister" class="text-accent-light dark:text-accent-dark">Register</a></p>
+        </div>
+        <div id="registerForm" class="glass-effect rounded-xl p-8 space-y-6 hidden">
+          <h2 class="text-2xl font-bold text-center">Register</h2>
+          <form id="registerFormElement" class="space-y-4">
+            <div>
+              <label for="registerUsername" class="block text-sm font-medium">Username</label>
+              <input type="text" id="registerUsername" name="username" required class="w-full px-3 py-2 border rounded-md">
+            </div>
+            <div>
+              <label for="registerPassword" class="block text-sm font-medium">Password</label>
+              <input type="password" id="registerPassword" name="password" required class="w-full px-3 py-2 border rounded-md">
+            </div>
+            <button type="submit" class="w-full px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-md">Register</button>
+          </form>
+          <p class="text-center">Already have an account? <a href="#" id="showLogin" class="text-accent-light dark:text-accent-dark">Login</a></p>
+        </div>
+      </div>
 
+      <!-- Upload Section -->
+      <div id="uploadSection" class="max-w-2xl mx-auto mb-16 animate-slide-up hidden">
+        <form id="uploadForm" class="glass-effect rounded-xl p-8 space-y-6">
           <div class="space-y-2">
             <label for="fileInput" class="block text-sm font-medium text-foreground-light dark:text-foreground-dark">
               File
@@ -274,16 +297,122 @@
       }
     });
 
+    // Authentication logic
+    const authButton = document.getElementById('authButton');
+    const authForms = document.getElementById('authForms');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showRegister = document.getElementById('showRegister');
+    const showLogin = document.getElementById('showLogin');
+    const uploadSection = document.getElementById('uploadSection');
+
+    let isLoggedIn = false;
+
+    authButton.addEventListener('click', () => {
+      if (isLoggedIn) {
+        logout();
+      } else {
+        authForms.classList.toggle('hidden');
+        uploadSection.classList.add('hidden');
+      }
+    });
+
+    showRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+    });
+
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+    });
+
+    document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+          isLoggedIn = true;
+          authButton.textContent = 'Logout';
+          authForms.classList.add('hidden');
+          uploadSection.classList.remove('hidden');
+          loadFileList();
+        } else {
+          const data = await response.json();
+          alert(data.error);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login');
+      }
+    });
+
+    document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('registerUsername').value;
+      const password = document.getElementById('registerPassword').value;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+          alert('Registration successful. Please log in.');
+          registerForm.classList.add('hidden');
+          loginForm.classList.remove('hidden');
+        } else {
+          const data = await response.json();
+          alert(data.error);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('An error occurred during registration');
+      }
+    });
+
+    async function logout() {
+      try {
+        const response = await fetch('/logout', { method: 'POST' });
+        if (response.ok) {
+          isLoggedIn = false;
+          authButton.textContent = 'Login';
+          uploadSection.classList.add('hidden');
+          document.getElementById('fileList').innerHTML = '';
+        } else {
+          throw new Error('Logout failed');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout');
+      }
+    }
+
     // File upload logic with progress indication
     document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const userInput = document.getElementById("userInput").value;
       const fileInput = document.getElementById("fileInput");
       const submitButton = e.target.querySelector('button[type="submit"]');
       const file = fileInput.files[0];
 
-      if (!userInput || !file) {
-        alert("Both username and file are required.");
+      if (!file) {
+        alert("File is required.");
         return;
       }
 
@@ -304,7 +433,6 @@
       submitButton.disabled = true;
 
       const formData = new FormData();
-      formData.append("user", userInput);
       formData.append("file", file);
 
       try {
@@ -358,6 +486,13 @@
     async function loadFileList() {
       try {
         const response = await fetch("/file/list");
+        if (response.status === 401) {
+          isLoggedIn = false;
+          authButton.textContent = 'Login';
+          uploadSection.classList.add('hidden');
+          document.getElementById('fileList').innerHTML = '';
+          return;
+        }
         const files = await response.json();
         const fileList = document.getElementById("fileList");
         fileList.innerHTML = "";
@@ -414,6 +549,12 @@
               >
                 Download File
               </a>
+              <button 
+                class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-center rounded-md transition-colors text-sm font-display"
+                onclick="deleteFile('${file.name}')"
+              >
+                Delete File
+              </button>
             </div>
           `;
 
@@ -425,9 +566,41 @@
       }
     }
 
-    // Load file list on page load
-    loadFileList();
+    async function deleteFile(filename) {
+      if (confirm(`Are you sure you want to delete ${filename}?`)) {
+        try {
+          const response = await fetch(`/file/${filename}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            loadFileList();
+          } else {
+            const data = await response.json();
+            alert(data.error);
+          }
+        } catch (error) {
+          console.error('Delete error:', error);
+          alert('An error occurred while deleting the file');
+        }
+      }
+    }
+
+    // Check login status on page load
+    fetch('/file/list')
+      .then(response => {
+        if (response.ok) {
+          isLoggedIn = true;
+          authButton.textContent = 'Logout';
+          uploadSection.classList.remove('hidden');
+          loadFileList();
+        } else {
+          isLoggedIn = false;
+          authButton.textContent = 'Login';
+          uploadSection.classList.add('hidden');
+        }
+      })
+      .catch(error => console.error('Error checking login status:', error));
   </script>
 </body>
 </html>
-
